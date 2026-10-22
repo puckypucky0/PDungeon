@@ -1,0 +1,16 @@
+name: PDungeon
+version: '${version}'
+
+main: dev.pucky.PDungeon
+api-version: '1.21.4'
+softdepend:
+  - Multiverse-Core
+  - PlaceholderAPI
+load: POSTWORLD
+
+commands:
+  pdungeon:
+    description: PDungeon ana komutu
+    permission: pdungeon.use
+    usage: /pdungeon <komut>
+    aliases: [pd, dungeon]

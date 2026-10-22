@@ -1,0 +1,75 @@
+title: <b><gradient:#BF50F0:#7627BE>PDUN</gradient><gradient:#7627BE:#7627BE>GEON</gradient></b> <dark_gray>
+  >>
+
+# %pdungeon_arena_<dungeon_id>_<key>%
+placeholders:
+  pdungeon: "<b><gradient:#4B5D61:#7C6F47>PDUNGEON</gradient> <gradient:#7C6F47:#7C6F47>{version}</gradient></b>"
+  empty: "<dark_gray>-"
+  status:                                    # %pdungeon_arena_1_status%
+    empty: "<green>● Boş"
+    between_waves: "<yellow>● Dalga arası"
+    fighting: "<red>● Savaş sürüyor"
+  wave: "<white>{value}"                     # %pdungeon_arena_1_wave%        → 4
+  max_wave: "<gray>{value}"                  # %pdungeon_arena_1_max_wave%    → 7
+  alive_player_count: "<aqua>{value}"        # %pdungeon_arena_1_alive_player_count% → 3
+  alive_mobs: "<red>{value}"                 # %pdungeon_arena_1_alive_mobs%  → 6
+  pending_mobs: "<gold>+{value}"             # %pdungeon_arena_1_pending_mobs% → +2
+  time: "<white>{value}"                     # %pdungeon_arena_1_time%        → 02:41
+  difficulty: "{value}"                      # %pdungeon_arena_1_difficulty%  → formatted difficulty name
+
+settings:
+  max-players-per-arena: 4
+  wave-delay-seconds: 5
+  spawn-interval-tick: 9
+  respawn-location: # Where should PDungeon teleport players when they die / finish dungeons?
+    world: world
+    position: 0, 64, 0
+
+# scale and movementSpeedMultiplier are optional
+mobs:
+  K_ZOMBIE:   { name: "<green>Easy Zombie",            type: ZOMBIE,   health: 60,  damage: 10 }
+  K_SKELETON: { name: "<green>Easy Skeleton",          type: SKELETON, health: 50,  damage: 8 }
+  K_BRUTE:    { name: "<green><bold>Easy Ravager",     type: RAVAGER,  health: 220, damage: 18, scale: 1.3, movementSpeedMultiplier: 0.9 }
+
+  Z_HUSK:       { name: "<red>Hard Husk",              type: HUSK,            health: 200, damage: 23 }
+  Z_SPIDER:     { name: "<red>Hard Spider",            type: SPIDER,          health: 140, damage: 17, movementSpeedMultiplier: 1.2 }
+  Z_VINDICATOR: { name: "<red>Hard Vindicator",        type: VINDICATOR,      health: 290, damage: 30 }
+  Z_WITHER:     { name: "<red><bold>Hard Wither Skeleton", type: WITHER_SKELETON, health: 450, damage: 34, scale: 1.2 }
+
+difficulties:
+  EASY:
+    name: <green>Easy
+    arenas: [1] # Empty arenas in this difficulty will be detected automatically.
+    waves:
+      '1': { K_ZOMBIE: 5 }
+      '2': { K_ZOMBIE: 4, K_SKELETON: 3 }
+      '3': { K_BRUTE: 1, K_ZOMBIE: 3 }
+    loot: [] # /pd difficulty-loot - ingame
+
+  HARD:
+    name: <dark_red><bold>Hard
+    arenas: [2]
+    waves:
+      '1': { Z_HUSK: 5, Z_SPIDER: 3 }
+      '2': { Z_VINDICATOR: 3, Z_SPIDER: 3 }
+      '3': { Z_WITHER: 1, Z_HUSK: 3, Z_VINDICATOR: 2 }
+    loot: []
+
+arenas: # Arena means an dungeon map. You define your dungeon maps here.
+  '1': # Arena ID
+    world: zindan
+    player-spawn: 0, 64, 0 # Player spawn x, y, z
+    mob-spawns: # Mobs will spawn at one of these locations randomly.
+      - 8, 64, 0
+      - -8, 64, 0
+      - 0, 64, 8
+      - 0, 64, -8
+
+  '2':
+    world: zindan
+    player-spawn: 200, 64, 0
+    mob-spawns:
+      - 208, 64, 0
+      - 192, 64, 0
+      - 200, 64, 8
+      - 200, 64, -8
