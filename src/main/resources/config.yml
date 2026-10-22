@@ -50,12 +50,12 @@ difficulties:
     name: <dark_red><bold>Hard
     arenas: [2]
     waves:
-      '1': { Z_HUSK: 5, Z_SPIDER: 3 }
+      '1': { Z_HUSK: 5, Z_SPIDER: 3 } # MOB_ID: MOB_COUNT
       '2': { Z_VINDICATOR: 3, Z_SPIDER: 3 }
       '3': { Z_WITHER: 1, Z_HUSK: 3, Z_VINDICATOR: 2 }
     loot: []
 
-arenas: # Arena means an dungeon map. You define your dungeon maps here.
+arenas: # Arena means a dungeon map. You define your dungeon maps here.
   '1': # Arena ID
     world: zindan
     player-spawn: 0, 64, 0 # Player spawn x, y, z
