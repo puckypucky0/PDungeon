@@ -242,6 +242,9 @@ public class DungeonInstance {
         mobEntity.addPassenger(label);
         MobUtil.updateLabel(mobEntity);
         mobEntity.setCustomNameVisible(false);
+
+        PDungeon.getInstance().getConfigManager().getMobSpawnParticle()
+                .spawn(mobEntity.getLocation());
     }
 
     private void giveLoot(Player player) {

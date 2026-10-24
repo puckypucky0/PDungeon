@@ -13,7 +13,6 @@ import io.papermc.paper.entity.TeleportFlag;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -68,8 +67,8 @@ public final class PDungeon extends JavaPlugin {
                             Location loc = spawns.get(ThreadLocalRandom.current().nextInt(spawns.size()));
 
                             mob.teleport(loc, TeleportFlag.EntityState.RETAIN_PASSENGERS);
-                            loc.getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, loc, 25, 0.3, 0.6, 0.3, 0.02);
-                            loc.getWorld().spawnParticle(Particle.PORTAL, loc, 60, 0.4, 0.8, 0.4, 0.5);
+                            PDungeon.getInstance().getConfigManager().getMobTeleportParticle()
+                                    .spawn(loc);
                         }
 
                         if (!(m.getTarget() instanceof Player p) || !instance.getPlayers().contains(p.getUniqueId())) {

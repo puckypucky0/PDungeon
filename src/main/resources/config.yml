@@ -25,6 +25,37 @@ settings:
     world: world
     position: 0, 64, 0
 
+  mob-spawn-particle: # This particle will get shown when a dungeon mob spawns.
+    key: flame
+    multiplier: 4.0
+    offsetX: 0.3 # distribution on x-axis
+    offsetY: 0.95 # distribution on y-axis
+    offsetZ: 0.3 # distribution on z-axis
+    offsetExtra: 0.02 # scattering rate
+
+  mob-death-particle: # This particle will get shown when a dungeon mob dies.
+    key: soul
+    multiplier: 4.0
+    offsetX: 0.3
+    offsetY: 0.95
+    offsetZ: 0.3
+    offsetExtra: 0.02
+
+  mob-re-teleport-particle: # This particle will get shown when a dungeon mob gets too far from the arena and returns.
+    key: soul
+    multiplier: 4.0
+    offsetX: 0.3
+    offsetY: 0.95
+    offsetZ: 0.3
+    offsetExtra: 0.02
+
+  player-death-particle: # The particle will get shown when a player dies in dungeon.
+    key: soul
+    multiplier: 4.0
+    offsetX: 0.3
+    offsetY: 0.95
+    offsetZ: 0.3
+    offsetExtra: 0.02
 # scale and movementSpeedMultiplier are optional
 mobs:
   K_ZOMBIE:   { name: "<green>Easy Zombie",            type: ZOMBIE,   health: 60,  damage: 10 }

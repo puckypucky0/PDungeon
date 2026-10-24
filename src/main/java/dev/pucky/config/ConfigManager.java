@@ -1,14 +1,14 @@
 package dev.pucky.config;
 
+import dev.pucky.dungeon.DungeonParticle;
+import dev.pucky.util.CheckUtil;
 import dev.pucky.util.CommandUtils;
 import dev.pucky.util.MMUtil;
 import dev.pucky.util.logs.Logger;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +28,10 @@ public final class ConfigManager {
     @Getter private int maxPlayers;
     @Getter private int waveDelay;
     @Getter private int spawnInterval;
+    @Getter private DungeonParticle mobSpawnParticle;
+    @Getter private DungeonParticle mobDeathParticle;
+    @Getter private DungeonParticle playerDeathParticle;
+    @Getter private DungeonParticle mobTeleportParticle;
     private Location globalRespawn;
 
     public ConfigManager(JavaPlugin plugin) {
@@ -43,11 +47,21 @@ public final class ConfigManager {
         difficulties.clear();
         placeholderText.clear();
 
-        maxPlayers = plugin.getConfig().getInt("settings.max-players-per-arena", 4);
-        waveDelay = plugin.getConfig().getInt("settings.wave-delay-seconds", 5);
-        spawnInterval = plugin.getConfig().getInt("settings.spawn-interval-tick", 10);
+        maxPlayers =
+                CheckUtil.getOrDefault("settings.max-players-per-arena", Integer.class, 4);
 
-        // tüm arenalar için ortak dönüş noktası (başka dünyada olabilir)
+        waveDelay =
+                CheckUtil.getOrDefault("settings.wave-delay-seconds", Integer.class, 5);
+
+        spawnInterval =
+                CheckUtil.getOrDefault("settings.spawn-interval-tick", Integer.class, 15);
+
+        mobSpawnParticle = CheckUtil.validDungeonParticle("mob-spawn-particle");
+        mobDeathParticle = CheckUtil.validDungeonParticle("mob-death-particle");
+        playerDeathParticle =  CheckUtil.validDungeonParticle("player-death-particle");
+        mobTeleportParticle =  CheckUtil.validDungeonParticle("mob-re-teleport-particle");
+
+        // tüm arenalar için ortak dönüş noktası
         World respawnWorld = Bukkit.getWorld(plugin.getConfig().getString("settings.respawn-location.world", ""));
         globalRespawn = respawnWorld == null ? null
                 : toLocation(respawnWorld, plugin.getConfig().getString("settings.respawn-location.position"));

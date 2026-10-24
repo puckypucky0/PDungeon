@@ -171,7 +171,8 @@ public class DungeonListener implements Listener {
                         event.setCancelled(true);
 
                         Location loc = livingEntity.getLocation().add(0, livingEntity.getHeight() / 2, 0);
-                        loc.getWorld().spawnParticle(Particle.SCULK_SOUL, loc, 75, 0.1, 0.4, 0.1, 0.8);
+                        PDungeon.getInstance().getConfigManager().getMobDeathParticle()
+                                .spawn(loc);
 
                         livingEntity.getPassengers().forEach(Entity::remove);
                         livingEntity.remove();
@@ -255,6 +256,8 @@ public class DungeonListener implements Listener {
                     MMUtil.formatColorsPrefixed("<n>Zindan <f>başarısız")
             ));
         } else {
+            PDungeon.getInstance().getConfigManager().getPlayerDeathParticle()
+                    .spawn(player.getLocation());
             player.sendMessage(MMUtil.formatColorsPrefixed(
                     "<f>Öldünüz! <n>Zindandan elendiniz. Takımınız <v>" + remaining + " <n>kişi olarak devam ediyor."
             ));
@@ -298,7 +301,7 @@ public class DungeonListener implements Listener {
             player.sendMessage(MMUtil.formatColorsPrefixed(
                     "<v>" + Bukkit.getOfflinePlayer(playerId).getName() + " <n>düştü. Artık <v>" + instance.getPlayers().size() + " <n>kişisiniz."
             ));
-            player.playSound(player.getLocation(), Sound.ENTITY_ALLAY_HURT, 1f, 0f);
+            player.playSound(player.getLocation(), Sound.ENTITY_ALLAY_HURT, 10f, 0f);
         }
     }
 }
