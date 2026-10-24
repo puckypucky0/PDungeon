@@ -1,0 +1,15 @@
+# Maven
+target/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Claude çalışma dosyaları (yerelde kalır)
+BRAIN.md
+CLAUDE.md
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
