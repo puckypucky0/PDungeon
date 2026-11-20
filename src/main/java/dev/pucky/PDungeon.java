@@ -7,8 +7,10 @@ import dev.pucky.dungeon.DungeonInstance;
 import dev.pucky.dungeon.DungeonListener;
 import dev.pucky.dungeon.DungeonManager;
 import dev.pucky.dungeon.DungeonStatus;
+import dev.pucky.gui.PuckyGui;
 import dev.pucky.party.PartyListener;
 import dev.pucky.placeholder.DungeonExpansion;
+import dev.pucky.util.EditorUtil;
 import io.papermc.paper.entity.TeleportFlag;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -31,6 +33,7 @@ public final class PDungeon extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        PuckyGui.init(this);
 
         configManager = new ConfigManager(this);
         configManager.load();
@@ -45,7 +48,9 @@ public final class PDungeon extends JavaPlugin {
                 new DifficultyLootCommand(configManager),
                 new MobLootCommand(configManager),
                 new RespawnLocationCommand(configManager),
-                new LogsCommand(configManager)
+                new LogsCommand(configManager),
+                new EditorCommand(),
+                new DifficultyItemRequirementCommand(configManager)
         );
 
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI"))
@@ -53,6 +58,7 @@ public final class PDungeon extends JavaPlugin {
 
         this.getServer().getPluginManager().registerEvents(new DungeonListener(), this);
         this.getServer().getPluginManager().registerEvents(new PartyListener(), this);
+        this.getServer().getPluginManager().registerEvents(new EditorUtil(), this);
 
 
         Bukkit.getScheduler().runTaskTimer(this, () -> {
@@ -86,6 +92,8 @@ public final class PDungeon extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        PuckyGui.closeAll();
+        EditorUtil.flush(); // editörde kaydedilmemiş değişiklik kalmasın
         for (DungeonInstance run : DungeonManager.getAll().values()) {
             run.end(DungeonStatus.KILLED_FORCE);
         }

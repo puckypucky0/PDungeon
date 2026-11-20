@@ -1,6 +1,12 @@
 package dev.pucky.dungeon;
 
+import dev.pucky.PDungeon;
+import dev.pucky.config.ConfigManager;
 import dev.pucky.util.logs.Logger;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +47,21 @@ public class DungeonManager {
 
     public static boolean isActive(int id) {
         return activeDungeons.containsKey(id);
+    }
+
+    public static long checkCooldownMillis(Player player, ConfigManager.Difficulty difficulty) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        Long cooldown = pdc.get(new NamespacedKey(PDungeon.instance, "cooldown_" + difficulty.id().toLowerCase()), PersistentDataType.LONG);
+        if (cooldown == null)
+            return 0;
+
+        long remaining = cooldown - System.currentTimeMillis();
+        return Math.max(0, remaining);
+    }
+
+    public static void setPlayerCooldown(Player player, ConfigManager.Difficulty difficulty, long cooldownMinutes) {
+        PersistentDataContainer pdc = player.getPersistentDataContainer();
+        pdc.set(new NamespacedKey(PDungeon.instance, "cooldown_" + difficulty.id().toLowerCase()), PersistentDataType.LONG, System.currentTimeMillis() + cooldownMinutes * 60_000L);
     }
 
     public static Map<Integer, DungeonInstance> getAll() {

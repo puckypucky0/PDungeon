@@ -10,6 +10,10 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class CheckUtil {
     public static <T> T getOrDefault(String path, Class<T> type, T def) {
         FileConfiguration config = PDungeon.instance.getConfig();
@@ -51,5 +55,72 @@ public class CheckUtil {
                 .offsetZ(number(section, "offsetZ", 0.3))
                 .offsetExtra(number(section, "offsetExtra", 0.02))
                 .build();
+    }
+
+    public static List<String> stringListVal(String id, String keyName, Object value, List<String> def) {
+        List<String> list = new ArrayList<>();
+        boolean bool = false;
+
+        if (value instanceof List<?> l) {
+            for (Object o : l) {
+                if (o instanceof String)
+                    list.add((String) o);
+                else bool = true;
+            }
+        }
+
+        if (bool)
+            Logger.fatal("<red>Some of the values of list " + keyName + " isn't String, some values may be missing -- " + id);
+
+        if (value == null || list.isEmpty()) {
+            Logger.fatal("<red>" + keyName + " has fallen back to default value.");
+            return def;
+        }
+
+        return list;
+    }
+
+    public static double doubleVal(String id, String keyName, Object value, double def) {
+        if (value instanceof Number n && n.doubleValue() >= 0)
+            return n.doubleValue();
+
+        Logger.fail("<red>" + keyName + " is malformed or missing. <white>Using " + def + " for default - " + id);
+        return def;
+    }
+
+    public static int intVal(String id, String keyName, Object value, int def) {
+        if (value instanceof Number n && n.intValue() >= 0)
+            return n.intValue();
+
+        Logger.fail("<red>" + keyName + " is malformed or missing. <white>Using " + def + " for default - " + id);
+        return def;
+    }
+
+    public static Map<?, ?> mapVal(String id, String keyName, Object value) {
+        if (value instanceof Map<?, ?> map)
+            return map;
+
+        Logger.fail("<red>" + keyName + " is malformed or missing. <white>Using empty map for default - " + id);
+        return Map.of();
+    }
+
+    public static String stringVal(String id, String keyName, Object value, String def) {
+        if (value instanceof String s) {
+            String stripped = MMUtil.stripLegacy(s);
+            if (!stripped.isBlank())
+                return stripped;
+        }
+
+        Logger.fail("<red>" + keyName + " is malformed or missing. <white>Using " + def + " for default - " + id);
+        return def;
+    }
+
+    public static Boolean booleanVal(String id, String keyName, Object value, boolean def) {
+        if (value instanceof Boolean b) {
+            return b;
+        }
+
+        Logger.fail("<red>" + keyName + " is malformed or missing. <white>Using " + def + " for default - " + id);
+        return def;
     }
 }

@@ -2,6 +2,7 @@ package dev.pucky.dungeon;
 
 import dev.pucky.PDungeon;
 import dev.pucky.config.ConfigManager;
+import dev.pucky.util.CommandUtils;
 import dev.pucky.util.LootUtil;
 import dev.pucky.util.MMUtil;
 import dev.pucky.util.MobUtil;
@@ -76,6 +77,19 @@ public class DungeonInstance {
             ));
             player.teleport(this.arenaConfig.playerSpawn());
             player.playSound(player.getLocation(), Sound.BLOCK_END_PORTAL_SPAWN, 1f, 0.9f);
+
+            DungeonManager.setPlayerCooldown(player, difficulty, difficulty.cooldown());
+            for (ConfigManager.ItemRequirement itemRequirement : difficulty.requirements().itemRequirements()) {
+                if (itemRequirement.consume()) {
+                    ItemStack consumeItem = CommandUtils.decode(itemRequirement.base64());
+                    player.getInventory().removeItem(consumeItem);
+                    player.sendMessage(
+                            MMUtil.formatColorsPrefixed("<n>Bu zindana girmek için <v>" + consumeItem.getAmount() + "x ")
+                                    .append(consumeItem.displayName())
+                                    .append(MMUtil.formatColors(" <n>harcadın."))
+                    );
+                }
+            }
         }
 
         this.nextWave();

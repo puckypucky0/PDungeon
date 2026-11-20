@@ -9,16 +9,16 @@ import dev.pucky.dungeon.DungeonInstance;
 import dev.pucky.dungeon.DungeonManager;
 import dev.pucky.party.Party;
 import dev.pucky.party.PartyManager;
+import dev.pucky.util.CommandUtils;
 import dev.pucky.util.MMUtil;
+import dev.pucky.util.RequirementUtil;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 public class StartDungeonInstanceCommand implements MinecraftCommand {
 
@@ -60,6 +60,12 @@ public class StartDungeonInstanceCommand implements MinecraftCommand {
         boolean isMultiPlayer = Boolean.parseBoolean(args[0]);
         ConfigManager.Difficulty difficulty = configManager.getDifficulty(args[1]);
 
+        Component requirementsMet = RequirementUtil.checkRequirements(difficulty, player);
+        if (requirementsMet != null) {
+            player.sendMessage(requirementsMet);
+            return;
+        }
+
         // zorluğun arena listesinden yüklü ve boş olan ilk arena
         Integer arena = null;
         for (int id : difficulty.arenas()) {
@@ -95,18 +101,58 @@ public class StartDungeonInstanceCommand implements MinecraftCommand {
                 player.sendMessage(MMUtil.formatColorsPrefixed(
                         "<f>Partinizden biri zaten bir zindanda!"
                 ));
-            } else {
-                DungeonInstance.builder()
-                        .arenaConfig(configManager.getArena(arena))
-                        .players(new HashSet<>(party.getMembers()))
-                        .difficulty(difficulty)
-                        .build()
-                        .start();
+            } else { // Requirement check
+                List<String> invalidMembers = new ArrayList<>();
+                for (UUID member : party.getMembers()) {
+                    Player memberPlayer = Bukkit.getPlayer(member);
+                    if (memberPlayer != null && RequirementUtil.checkRequirements(difficulty, memberPlayer) != null)
+                        invalidMembers.add(memberPlayer.getName());
+                }
+                if (!invalidMembers.isEmpty()) {
+                    player.sendMessage(MMUtil.formatColorsPrefixed(
+                            "<f>Şu parti üyeleri bu zindan için gereksinimleri karşılamıyor: <n>" +  String.join(", ", invalidMembers)
+                    ));
+                } else {
+                    long cooldown = DungeonManager.checkCooldownMillis(player, difficulty);
+                    if (cooldown != 0) {
+                        player.sendMessage(MMUtil.formatColorsPrefixed(
+                                "<n>Bu zindana girmek için <v>" + CommandUtils.formatDuration(cooldown) + " <n>kadar daha beklemen gerekiyor."
+                        ));
+                    } else {
+                        List<String> cooldownMembers = new ArrayList<>();
+                        for (UUID member : party.getMembers()) {
+                            Player memberPlayer = Bukkit.getPlayer(member);
+                            if (memberPlayer != null && DungeonManager.checkCooldownMillis(memberPlayer, difficulty) != 0)
+                                cooldownMembers.add(memberPlayer.getName());
+                        }
+                        if (!cooldownMembers.isEmpty()) {
+                            player.sendMessage(MMUtil.formatColorsPrefixed(
+                                    "<f>Şu parti üyelerinin bu zindan için bekleme süresi var: " +  String.join(", ", cooldownMembers)
+                            ));
+                        } else {
+                            DungeonInstance.builder()
+                                    .arenaConfig(configManager.getArena(arena))
+                                    .players(new HashSet<>(party.getMembers()))
+                                    .difficulty(difficulty)
+                                    .build()
+                                    .start();
+                        }
+                    }
+                }
+
+
             }
         } else {
             if (DungeonManager.get(player.getUniqueId()) != null) {
                 player.sendMessage(MMUtil.formatColorsPrefixed(
                         "<f>Zaten bir zindandasınız!"
+                ));
+                return;
+            }
+
+            if (DungeonManager.checkCooldownMillis(player, difficulty) != 0) {
+                player.sendMessage(MMUtil.formatColorsPrefixed(
+                        "<n>Bu zindana girmek için <v>" + CommandUtils.formatDuration(DungeonManager.checkCooldownMillis(player, difficulty)) + " <n>kadar daha beklemen gerekiyor."
                 ));
                 return;
             }

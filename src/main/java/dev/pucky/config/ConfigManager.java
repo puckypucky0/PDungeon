@@ -8,7 +8,9 @@ import dev.pucky.util.logs.Logger;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
@@ -32,7 +34,7 @@ public final class ConfigManager {
     @Getter private DungeonParticle mobDeathParticle;
     @Getter private DungeonParticle playerDeathParticle;
     @Getter private DungeonParticle mobTeleportParticle;
-    private Location globalRespawn;
+    @Getter private Location globalRespawn;
 
     public ConfigManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -41,7 +43,11 @@ public final class ConfigManager {
     public void load() {
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
+        parse();
+    }
 
+    // diske dokunmadan bellekteki config'ten record'ları yeniden kurar (editör bunu kullanır)
+    public void parse() {
         arenas.clear();
         mobs.clear();
         difficulties.clear();
@@ -249,7 +255,29 @@ public final class ConfigManager {
             if (arenaIds.isEmpty())
                 warn("Zorluk " + id + ": arenas listesi boş, bu zorlukla zindan başlatılamaz.");
 
-            difficulties.put(id, new Difficulty(id, name, waves, this.loadLoot(difficultyInfoSection.getMapList("loot")), arenaIds));
+            int playtimeMinutes = CheckUtil.intVal(
+                    id, "Dungeon playtime requirement value", difficultyInfoSection.get("requirements.playtime-minutes"), 0
+            );
+            int cooldownMinutes = CheckUtil.intVal(
+                    id, "Dungeon cooldown minutes value", difficultyInfoSection.get("cooldown-minutes"), 0
+            );
+
+            List<ItemRequirement> itemRequirements = new ArrayList<>();
+
+            for (Map<?, ?> itemsMap : difficultyInfoSection.getMapList("requirements.items")) {
+                ItemRequirement itemRequirement = new ItemRequirement(
+                        CheckUtil.stringVal(
+                                id, "Dungeon requirement item base64 value", itemsMap.get("code"), ""
+                        ),
+                        CheckUtil.booleanVal(
+                                id, "Dungeon requirement item consume value", itemsMap.get("consume"), false
+                        )
+                );
+                itemRequirements.add(itemRequirement);
+            }
+            Requirements requirements = new Requirements(itemRequirements, playtimeMinutes);
+
+            difficulties.put(id, new Difficulty(id, name, waves, this.loadLoot(difficultyInfoSection.getMapList("loot")), arenaIds, cooldownMinutes, requirements));
         }
     }
 
@@ -286,16 +314,21 @@ public final class ConfigManager {
         return placeholderText.getOrDefault(key, "");
     }
 
-    private Location toLocation(World world, String raw) {
+    public Location toLocation(World world, String raw) {
         if (raw == null) return null;
+        if (world == null) return null;
         String[] parts = raw.split(",");
         if (parts.length != 3) return null;
-        return new Location(
-                world,
-                Double.parseDouble(parts[0].trim()),
-                Double.parseDouble(parts[1].trim()),
-                Double.parseDouble(parts[2].trim())
-        );
+        try {
+            return new Location(
+                    world,
+                    Double.parseDouble(parts[0].trim()),
+                    Double.parseDouble(parts[1].trim()),
+                    Double.parseDouble(parts[2].trim())
+            );
+        } catch (NumberFormatException e) {
+            return null; // "0, 64, a" gibi bozuk değer
+        }
     }
 
     private void warn(String message) {
@@ -311,7 +344,13 @@ public final class ConfigManager {
     public record Wave(int number, Map<String, Integer> mobs) {
     }
 
-    public record Difficulty(String id, Component name, Map<Integer, Wave> waves, List<LootEntry> loot, List<Integer> arenas) {
+    public record Difficulty(String id, Component name, Map<Integer, Wave> waves, List<LootEntry> loot, List<Integer> arenas, int cooldown, Requirements requirements) {
+    }
+
+    public record Requirements(List<ItemRequirement> itemRequirements, int playtimeMinutes) {
+    }
+
+    public record ItemRequirement(String base64, boolean consume) {
     }
 
     public record LootEntry(ItemStack item, double chance, int min, int max) {

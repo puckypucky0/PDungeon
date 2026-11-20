@@ -8,12 +8,12 @@ import org.bukkit.Particle;
 
 @Builder @Getter @Accessors(fluent = true)
 public class DungeonParticle {
-    public Particle particleType;
-    public double particleMultiplier;
-    public double offsetX;
-    public double offsetY;
-    public double offsetZ;
-    public double offsetExtra;
+    private Particle particleType;
+    private double particleMultiplier;
+    private double offsetX;
+    private double offsetY;
+    private double offsetZ;
+    private double offsetExtra;
 
     public void spawn(Location location) {
         location.getWorld().spawnParticle(
